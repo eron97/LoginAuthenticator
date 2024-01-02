@@ -4,25 +4,39 @@ import (
 	"log"
 
 	"github.com/eron97/LoginAuthenticator.git/config/database"
+	"github.com/eron97/LoginAuthenticator.git/config/services"
+
 	"github.com/gin-gonic/gin"
-	_ "github.com/go-sql-driver/mysql"
 )
 
+// No arquivo main.go
+
 func main() {
-
 	dbCredentials := "admin:adminadmin@tcp(database-1.cpj0eavfzshu.us-east-1.rds.amazonaws.com:3306)/users"
-
-	// Inicializa o banco de dados
-	db := database.InitDB(dbCredentials)
-	log.Println("[Conexão com database ok]")
-	defer db.Close()
 
 	r := gin.Default()
 
-	// Armazena o ponteiro do banco de dados no contexto Gin
 	r.Use(func(c *gin.Context) {
+		// Passa as credenciais diretamente para a função InitDB
+		db := database.InitDB(dbCredentials)
 		c.Set("db", db)
+		defer db.Close()
 		c.Next()
+	})
+
+	log.Println("[Servidor iniciado]")
+
+	r.GET("/users", func(c *gin.Context) {
+		// Chama a função QueryAllUsers diretamente aqui
+		users, err := services.QueryAllUsers(c)
+		if err != nil {
+			// Lida com o erro, se necessário
+			c.JSON(500, gin.H{"error": err.Error()})
+			return
+		}
+
+		// Retorna os usuários
+		c.JSON(200, users)
 	})
 
 	r.Run()
