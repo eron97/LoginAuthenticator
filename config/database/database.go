@@ -10,11 +10,11 @@ import (
 
 // UserRepository define a interface para operações de banco de dados associadas à entidade User
 type UserRepository interface {
-	GetUsers() ([]models.User, error)
-	GetUserByID(userID int) (models.User, error)
-	CreateUser(user models.User) (int, error)
-	UpdateUser(user models.User) error
-	DeleteUser(userID int) error
+	DBGetUsers() ([]models.User, error)
+	DBGetUserByID(userID int) (models.User, error)
+	DBCreateUser(user models.User) (int, error)
+	DBUpdateUser(user models.User) error
+	DBDeleteUser(userID int) error
 }
 
 // MySQLUserRepository é uma implementação de UserRepository para MySQL
@@ -28,7 +28,7 @@ func NewMySQLUserRepository(db *sql.DB) *MySQLUserRepository {
 }
 
 // GetUsers retorna todos os usuários do banco de dados
-func (r *MySQLUserRepository) GetUsers() ([]models.User, error) {
+func (r *MySQLUserRepository) DBGetUsers() ([]models.User, error) {
 	rows, err := r.db.Query("SELECT * FROM users")
 	if err != nil {
 		return nil, err
