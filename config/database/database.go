@@ -1,5 +1,3 @@
-// No package database
-
 package database
 
 import (
@@ -10,18 +8,28 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
-// DBService define as operações necessárias no banco de dados.
-type DBService interface {
-	QueryAllUsers() ([]models.User, error)
+// UserRepository define a interface para operações de banco de dados associadas à entidade User
+type UserRepository interface {
+	GetUsers() ([]models.User, error)
+	GetUserByID(userID int) (models.User, error)
+	CreateUser(user models.User) (int, error)
+	UpdateUser(user models.User) error
+	DeleteUser(userID int) error
 }
 
-// DatabaseServiceImpl é a implementação concreta de DBService.
-type DatabaseServiceImpl struct {
-	DB *sql.DB
+// MySQLUserRepository é uma implementação de UserRepository para MySQL
+type MySQLUserRepository struct {
+	db *sql.DB
 }
 
-func (s *DatabaseServiceImpl) QueryAllUsers() ([]models.User, error) {
-	rows, err := s.DB.Query("SELECT * FROM users")
+// NewMySQLUserRepository cria uma nova instância de MySQLUserRepository
+func NewMySQLUserRepository(db *sql.DB) *MySQLUserRepository {
+	return &MySQLUserRepository{db: db}
+}
+
+// GetUsers retorna todos os usuários do banco de dados
+func (r *MySQLUserRepository) GetUsers() ([]models.User, error) {
+	rows, err := r.db.Query("SELECT * FROM users")
 	if err != nil {
 		return nil, err
 	}
@@ -41,19 +49,23 @@ func (s *DatabaseServiceImpl) QueryAllUsers() ([]models.User, error) {
 	return users, nil
 }
 
-func InitDB(dbCredentials string) *sql.DB {
+// InitDB inicia a conexão com o banco de dados MySQL na AWS RDS
+func InitDB(dbCredentials string) (*sql.DB, error) {
 	var err error
 	db, err := sql.Open("mysql", dbCredentials)
 	if err != nil {
 		log.Fatal(err)
+		return nil, err
 	}
 
+	// Verifica a conexão
 	err = db.Ping()
 	if err != nil {
 		log.Fatal(err)
+		return nil, err
 	}
 
 	log.Println("[InitDB: Conexão bem-sucedida ao AWS RDS]")
 
-	return db
+	return db, nil
 }
