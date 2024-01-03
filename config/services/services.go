@@ -1,4 +1,3 @@
-// services/user_service.go
 package services
 
 import (
@@ -6,27 +5,22 @@ import (
 	"github.com/eron97/LoginAuthenticator.git/config/models"
 )
 
-type UserService struct {
-	userRepository database.UserRepository
+type ListService interface {
+	AllUsers() ([]models.User, error)
 }
 
-// NewUserService cria uma nova instância de UserService
-func NewUserService(userRepository database.UserRepository) *UserService {
-	return &UserService{
-		userRepository: userRepository,
+type MyListServices struct {
+	DBRepository database.DBRepository
+}
+
+func NewListService(DBRepository database.DBRepository) *MyListServices {
+	return &MyListServices{
+		DBRepository: DBRepository,
 	}
 }
 
-// GetUsers retorna todos os usuários e aplica regras de negócios se necessário
-func (userService *UserService) GetUsers() ([]models.User, error) {
-	// Obter usuários do repositório
-	users, err := userService.userRepository.DBGetUsers()
-	if err != nil {
-		return nil, err
-	}
-
-	// Aplicar regras de negócios, se necessário
-	// Exemplo: Filtrar usuários, aplicar transformações, etc.
-
-	return users, nil
+func (db *MyListServices) AllUsers() ([]models.User, error) {
+	return db.DBRepository.ReadAll()
+	// restante do processamento da lógica de negócios
+	// output
 }

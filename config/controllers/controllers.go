@@ -1,31 +1,24 @@
 package controllers
 
 import (
-	"github.com/eron97/LoginAuthenticator.git/config/models"
+	"net/http"
+
 	"github.com/eron97/LoginAuthenticator.git/config/services"
+	"github.com/gin-gonic/gin"
 )
 
-type UserController struct {
-	userService *services.UserService
+var listServices services.ListService
+
+func SetTodoService(services services.ListService) {
+	listServices = services
 }
 
-// NewUserController cria uma nova instância de UserController
-func NewUserController(userService *services.UserService) *UserController {
-	return &UserController{
-		userService: userService,
-	}
-}
-
-// GetUsersHandler é um manipulador que chama a função GetUsers do UserService
-func (controller *UserController) GetUsersHandler() ([]models.User, error) {
-	// Chama a função GetUsers do UserService
-	users, err := controller.userService.GetUsers()
+func GetAllController(c *gin.Context) {
+	getAll, err := listServices.AllUsers()
 	if err != nil {
-		// Handle error (log, return a specific error, etc.)
-		return nil, err
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao buscar tarefas"})
+		return
 	}
 
-	// Pode realizar outras operações ou manipulações aqui, se necessário
-
-	return users, nil
+	c.JSON(http.StatusOK, gin.H{"tasks": getAll})
 }
